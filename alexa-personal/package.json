@@ -1,0 +1,27 @@
+{
+  "name": "alexa-holidays",
+  "version": "1.0.0",
+  "description": "Alexa Holidays Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "alexa",
+    "skill",
+    "settings"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "alexa-sdk": "^1.0.9",
+    "deferred": "^0.7.8",
+    "lodash": "^4.5.0",
+    "request": "^2.81.0",
+    "request-promise": "^2.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}

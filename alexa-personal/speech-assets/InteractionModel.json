@@ -1,0 +1,250 @@
+{
+  "intents": [
+    {
+      "name": "AMAZON.CancelIntent",
+      "samples": []
+    },
+    {
+      "name": "AMAZON.HelpIntent",
+      "samples": []
+    },
+    {
+      "name": "AMAZON.StopIntent",
+      "samples": []
+    },
+    {
+      "name": "durationStay",
+      "samples": [
+        "{duration} weeks"
+      ],
+      "slots": [
+        {
+          "name": "duration",
+          "type": "AMAZON.NUMBER",
+          "samples": [
+            "{duration} weeks"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extraActivity",
+      "samples": [
+        "Can you add in a day trip to {activity}"
+      ],
+      "slots": [
+        {
+          "name": "activity",
+          "type": "EXTRA_ACTIVITIES",
+          "samples": [
+            "I also want to do {activity}"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "holidayType",
+      "samples": [
+        "I am interested in {type}"
+      ],
+      "slots": [
+        {
+          "name": "type",
+          "type": "TYPE_HOLIDAY",
+          "samples": [
+            "I am interested in {type}"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "moreInfo",
+      "samples": [
+        "Thanks Alexa. Can you send me more information?"
+      ],
+      "slots": []
+    },
+    {
+      "name": "searchHoliday",
+      "samples": [
+        "Ask Emirates for a holiday to {destination}"
+      ],
+      "slots": [
+        {
+          "name": "destination",
+          "type": "DESTINATIONS",
+          "samples": [
+            "I will go to {destination}"
+          ]
+        }
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "DESTINATIONS",
+      "values": [
+        {
+          "id": null,
+          "name": {
+            "value": "Thailand",
+            "synonyms": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "EXTRA_ACTIVITIES",
+      "values": [
+        {
+          "id": null,
+          "name": {
+            "value": "swim with dolphins",
+            "synonyms": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "TYPE_HOLIDAY",
+      "values": [
+        {
+          "id": null,
+          "name": {
+            "value": "beach",
+            "synonyms": []
+          }
+        },
+        {
+          "id": null,
+          "name": {
+            "value": "city",
+            "synonyms": []
+          }
+        },
+        {
+          "id": null,
+          "name": {
+            "value": "both",
+            "synonyms": []
+          }
+        }
+      ]
+    }
+  ],
+  "prompts": [
+    {
+      "id": "Elicit.Intent-durationStay.IntentSlot-duration",
+      "promptVersion": "1.0",
+      "definitionVersion": "1.0",
+      "variations": [
+        {
+          "type": "PlainText",
+          "value": "how long you want to stay?"
+        }
+      ]
+    },
+    {
+      "id": "Elicit.Intent-extraActivity.IntentSlot-activity",
+      "promptVersion": "1.0",
+      "definitionVersion": "1.0",
+      "variations": [
+        {
+          "type": "PlainText",
+          "value": "what extra activity you want to add"
+        }
+      ]
+    },
+    {
+      "id": "Elicit.Intent-holidayType.IntentSlot-type",
+      "promptVersion": "1.0",
+      "definitionVersion": "1.0",
+      "variations": [
+        {
+          "type": "PlainText",
+          "value": "what type of holiday you are interested in"
+        }
+      ]
+    },
+    {
+      "id": "Elicit.Intent-searchHoliday.IntentSlot-destination",
+      "promptVersion": "1.0",
+      "definitionVersion": "1.0",
+      "variations": [
+        {
+          "type": "PlainText",
+          "value": "where would you like to go"
+        }
+      ]
+    }
+  ],
+  "dialog": {
+    "version": "1.0",
+    "intents": [
+      {
+        "name": "durationStay",
+        "confirmationRequired": false,
+        "prompts": {},
+        "slots": [
+          {
+            "name": "duration",
+            "type": "AMAZON.NUMBER",
+            "elicitationRequired": true,
+            "confirmationRequired": false,
+            "prompts": {
+              "elicit": "Elicit.Intent-durationStay.IntentSlot-duration"
+            }
+          }
+        ]
+      },
+      {
+        "name": "extraActivity",
+        "confirmationRequired": false,
+        "prompts": {},
+        "slots": [
+          {
+            "name": "activity",
+            "type": "EXTRA_ACTIVITIES",
+            "elicitationRequired": true,
+            "confirmationRequired": false,
+            "prompts": {
+              "elicit": "Elicit.Intent-extraActivity.IntentSlot-activity"
+            }
+          }
+        ]
+      },
+      {
+        "name": "holidayType",
+        "confirmationRequired": false,
+        "prompts": {},
+        "slots": [
+          {
+            "name": "type",
+            "type": "TYPE_HOLIDAY",
+            "elicitationRequired": true,
+            "confirmationRequired": false,
+            "prompts": {
+              "elicit": "Elicit.Intent-holidayType.IntentSlot-type"
+            }
+          }
+        ]
+      },
+      {
+        "name": "searchHoliday",
+        "confirmationRequired": false,
+        "prompts": {},
+        "slots": [
+          {
+            "name": "destination",
+            "type": "DESTINATIONS",
+            "elicitationRequired": true,
+            "confirmationRequired": false,
+            "prompts": {
+              "elicit": "Elicit.Intent-searchHoliday.IntentSlot-destination"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
