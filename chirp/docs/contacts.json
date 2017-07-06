@@ -1,0 +1,16 @@
+{
+	"contacts": [
+	  {
+		"id": 1,
+		"firstname": "Pawan",
+		"lastname": "Mittal",
+		"nickname": "Pawan"
+	  },
+	  {
+		"id": 2,
+		"firstname": "Alastair",
+		"lastname": "Malkin",
+		"nickname": "Alastair"
+	  }
+	]
+}

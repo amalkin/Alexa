@@ -15,7 +15,7 @@
 // the role must have a trusted policy with
 // "lambda.amazonaws.com" and "arn:aws:iam::<YOUR ACCOUNT ID>:user/<YOUR USER>"
 
-var roleArn = 'arn:aws:iam::593860849298:role/lambda_dynamodb';
+var roleArn = 'arn:aws:iam::378607786206:role/lambda_dynamo';
 var region = 'eu-west-1';
 /* DO NOT MAKE CHANGE BELOW THIS */
 var aws = require('aws-sdk');
@@ -68,8 +68,8 @@ sts.assumeRole({
           }
         };
 
-        var lambda = require('/Users/pmital/Desktop/adobe/demos/aem-demos/amazon-alexa/git/AlexaExamples/alexa-holidays/index.js');
-        var event = require('./input.json');
+        var lambda = require('C:/Users/malkin/_Alastair/_Development/_Git/D/repo/_amalkin/Alexa/chirp/index.js');
+        var event = require('C:/Users/malkin/_Alastair/_Development/_Git/D/repo/_amalkin/Alexa/chirp/test-am/input.json');
         lambda.handler(event, context());
     }
 });

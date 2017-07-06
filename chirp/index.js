@@ -7,7 +7,7 @@
 
  var speechOutput;
  var reprompt;
- var welcomeOutput = "Welcome to The Malkins.";
+ var welcomeOutput = "Welcome to Chirp.";
  var welcomeReprompt = "Let me know when you are ready?";
 
  // 2. Skill Code =======================================================================================================
@@ -19,7 +19,7 @@ var AWS = require('aws-sdk');
 
 // Firebase connectivity
 var firebase = require("firebase-admin");
-var serviceAccount = require("./config/themalkins-5de0c-firebase-adminsdk-lielv-ec38cb4669.json");
+var serviceAccount = require("./config/alexa-ff969-firebase-adminsdk-hqh5b-dcb98fefd4.json");
 var fbconfig = require('./config/fb_config');
 
 var APP_ID = undefined;  // TODO replace with your app ID (OPTIONAL).
@@ -43,7 +43,7 @@ var caasHolidays = undefined;
 var duration = undefined; //weeks
 var extraActivity = undefined;
 
-var friends = undefined;
+var contacts = undefined;
 
 /*firebase.initializeApp({
     credential: firebase.credential.cert(serviceAccount),
@@ -54,9 +54,9 @@ var fbConfigDetails = {
     databaseURL: fbconfig.config.DATABASE_URL
 };
 
-function getFBFriends() {
+function getFBContacts() {
     var ref = firebase.app().database().ref();
-    var usersRef = ref.child('friends');
+    var usersRef = ref.child('contacts');
     return usersRef.orderByKey().once('value').then(function(snapshot) {
         return snapshot.val();
     });
@@ -76,32 +76,7 @@ exports.handler = (event, context, callback) => {
         firebase.initializeApp(fbConfigDetails);
 
         var ref = firebase.app().database().ref();
-        var usersRef = ref.child('friends');
-        /*usersRef.orderByKey().on('value', function(snap) {
-            console.log("usersRefsss: "+snap.getKey(), snap.val());
-            //firebase.database().goOffline();
-        });*/
-
-        /*usersRef.orderByKey().once('value').then(function(snap) {
-            console.log("usersRefsss: "+snap.getKey(), snap.val());
-        }, function(error) {
-            console.error(error);
-        });*/
-
-        /*theFriends = getFBFriends();
-        for (friend in theFriends) {
-            console.log("theFriends: "+theFriends[friend].firstname);
-        }
-        console.log("usersRef: "+theFriends);
-
-        getFBFriends().then((friends) => {
-            console.log("[getFBFriends] friends: ");
-            for (friend in friends) {
-                console.log("[getFBFriends] friends: "+friends[friend].firstname);
-            }
-            
-        })*/
-
+        var usersRef = ref.child('contacts');
 
     }
 
@@ -151,19 +126,34 @@ var startMalkinsHandlers = Alexa.CreateStateHandler(states.START_MODE, {
     'sayName': function() {
         console.log("Intent sayName - startMalkinsHandlers");
 
-        getFBFriends().then((friends) => {
-            console.log("[getFBFriends] friends: ");
-            for (friend in friends) {
-                console.log("[getFBFriends] friends: "+friends[friend].firstname);
+        getFBContacts().then((contacts) => {
+            console.log("[getFBContacts] contacts: ");
+            for (contact in contacts) {
+                console.log("[getFBContacts] contacts: "+contacts[contact].firstname);
+            }
+
+            var accessToken = this.event.session.user.accessToken;
+            console.log("[sayName] Access Token: " + this.event.session.user.accessToken);
+            console.log("[sayName] Access userId: " + this.event.session.user.userId);
+
+            var name = this.event.request.intent.slots.Name.value;
+            console.log("[sayName] speechOutput - " + name);
+
+            var speechOutput = "Hello " + name + ", how are you today?";
+            if(this.attributes["debug"] == "yes") {
+            console.log("Debugging Alexa ask - " + speechOutput);
+            this.emitWithState("moreInfo");
+            } else{
+            this.emit(":tell", speechOutput, speechOutput);
             }
             
         })
 
-        var theFriends = getFBFriends();
-        console.log("[sayName] theFriends: "+theFriends);
-        for (friend in theFriends) {
-            console.log("theFriends: "+theFriends[friend].firstname);
-        }
+        // var theContacts = getFBContacts();
+        // console.log("[sayName] theContacts: "+theContacts);
+        // for (contact in theContacts) {
+        //     console.log("theContacts: "+theContacts[contact].firstname);
+        // }
 
         /*var ref = firebase.app().database().ref();
         var usersRef = ref.child('friends');
@@ -176,61 +166,6 @@ var startMalkinsHandlers = Alexa.CreateStateHandler(states.START_MODE, {
             console.log("usersRef: "+snap.getKey(), snap.val());
         }*/
         
-        
-
-        var accessToken = this.event.session.user.accessToken;
-        console.log("[sayName] Access Token: " + this.event.session.user.accessToken);
-        console.log("[sayName] Access userId: " + this.event.session.user.userId);
-
-        var name = this.event.request.intent.slots.Name.value;
-        console.log("[sayName] speechOutput - " + name);
-
-        var analyticsData = {
-            ipAddress:"31.48.147.227",
-            pageName: "SayNameIntent",
-            channel: "Tests",
-            prop1: "Alexa-one",
-            prop2: "alexa-two",
-            events: "event1",
-            eVar1: name,
-            eVar2: "",
-            eVar3: "Alastair"
-        };
-
-        /*aaHelper.getCRSFToken().then(function(token) {
-            console.log("[aaHelper.getCRSFToken] Analytics data token: ");
-            aaHelper.postAuthorAnalyticsData(token,analyticsData)
-                .then(function(response) {
-                    console.log("[aaHelper.postAuthorAnalyticsData] Analytics data saved: ");
-                })
-                .catch(function(err) {
-                    console.log("[aaHelper.postAuthorAnalyticsData] Coming here in error: "+err.statusCode);
-                });
-
-        }).catch(function(err) {
-            console.log("[aaHelper.getCRSFToken] Coming here in error: "+err);
-        });*/
-
-            
-        aaHelper.postAnalytics(analyticsData).then((response) => {
-            console.log("[sayName.postAnalytics] AA data saved: " + JSON.stringify(response));
-            
-        },
-        (err) => {  
-            console.log("sayName.postAnalytics: ERROR: "+err);
-        });
-
-
-
-
-        var speechOutput = "Hello " + name + ", how are you today?";
-        if(this.attributes["debug"] == "yes") {
-            console.log("Debugging Alexa ask - " + speechOutput);
-            this.emitWithState("moreInfo");
-        } else{
-            this.emit(":tell", speechOutput, speechOutput);
-        }
-
     },
     'moreInfo': function() {
         console.log("Intent moreInfo - startMalkinsHandlers");

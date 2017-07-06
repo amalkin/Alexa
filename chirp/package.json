@@ -1,7 +1,7 @@
 {
-  "name": "alexa-themalkins",
+  "name": "alexa-themalkins-chirp",
   "version": "1.0.0",
-  "description": "Alexa The Malkins Project",
+  "description": "Alexa with The Malkins and Chirp Project",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
