@@ -39,16 +39,14 @@ var aamHelper = new AAMHelper();
 var AAHelper = require('./helpers/aa_helper');
 var aaHelper = new AAHelper();
 
+var UserHelper = require("./helpers/users_helper.js")
+
 var caasHolidays = undefined;
 var duration = undefined; //weeks
 var extraActivity = undefined;
 
 var friends = undefined;
 
-/*firebase.initializeApp({
-    credential: firebase.credential.cert(serviceAccount),
-    databaseURL: fbconfig.config.DATABASE_URL
-});*/
 var fbConfigDetails = {
     credential: firebase.credential.cert(serviceAccount),
     databaseURL: fbconfig.config.DATABASE_URL
@@ -56,8 +54,16 @@ var fbConfigDetails = {
 
 function getFBFriends() {
     var ref = firebase.app().database().ref();
-    var usersRef = ref.child('friends');
-    return usersRef.orderByKey().once('value').then(function(snapshot) {
+    var familyRef = ref.child('family');
+    return familyRef.orderByKey().once('value').then(function(snapshot) {
+        return snapshot.val();
+    });
+}
+
+function getFBFriend(name) {
+    var ref = firebase.app().database().ref();
+    var familyRef = ref.child('family');
+    return familyRef.orderByChild('firstname').equalTo(name).once('value').then(function(snapshot) {
         return snapshot.val();
     });
 }
@@ -74,34 +80,6 @@ exports.handler = (event, context, callback) => {
 
     if (firebase.apps.length == 0) {
         firebase.initializeApp(fbConfigDetails);
-
-        var ref = firebase.app().database().ref();
-        var usersRef = ref.child('friends');
-        /*usersRef.orderByKey().on('value', function(snap) {
-            console.log("usersRefsss: "+snap.getKey(), snap.val());
-            //firebase.database().goOffline();
-        });*/
-
-        /*usersRef.orderByKey().once('value').then(function(snap) {
-            console.log("usersRefsss: "+snap.getKey(), snap.val());
-        }, function(error) {
-            console.error(error);
-        });*/
-
-        /*theFriends = getFBFriends();
-        for (friend in theFriends) {
-            console.log("theFriends: "+theFriends[friend].firstname);
-        }
-        console.log("usersRef: "+theFriends);
-
-        getFBFriends().then((friends) => {
-            console.log("[getFBFriends] friends: ");
-            for (friend in friends) {
-                console.log("[getFBFriends] friends: "+friends[friend].firstname);
-            }
-            
-        })*/
-
 
     }
 
@@ -151,85 +129,76 @@ var startMalkinsHandlers = Alexa.CreateStateHandler(states.START_MODE, {
     'sayName': function() {
         console.log("Intent sayName - startMalkinsHandlers");
 
-        getFBFriends().then((friends) => {
+        var name;
+        if(this.attributes["debug"] == "yes") {
+            name = "Alastair";
+        } else{
+            name = this.event.request.intent.slots.Name.value;
+        }
+        console.log("name: "+name);
+
+        getFBFriend(name).then((friends) => {
             console.log("[getFBFriends] friends: ");
+            var firstname, lastname, birthday, pin;
+            var friendsCollection = [];
+            var remainingdays;
             for (friend in friends) {
-                console.log("[getFBFriends] friends: "+friends[friend].firstname);
+
+                var friendUser = new UserHelper({
+                    firstname: friends[friend].firstname,
+                    lastname: friends[friend].lastname,
+                    birthday: friends[friend].birthday,
+                    id: friends[friend].id
+                });
+                
+                birthday = friends[friend].birthday;
+                
+                remainingdays = birthdayCalculation(birthday, "RemainingDays");
+                console.log("[getFBFriends] remainingdays: "+ remainingdays);
+
+                pin = friends[friend].PIN;
+                console.log("[getFBFriends] pin: "+pin);
+                //decode PIN
+                var decodePin = Buffer.from(pin, 'base64').toString('ascii')
+                console.log("[getFBFriends] decode pin: "+decodePin);
+                //encode PIN
+                //var encodePin = Buffer.from(pin).toString('base64')
+            }
+
+            var accessToken = this.event.session.user.accessToken;
+            console.log("[sayName] Access Token: " + this.event.session.user.accessToken);
+            console.log("[sayName] Access userId: " + this.event.session.user.userId);
+
+            var analyticsData = {
+                ipAddress:"31.48.147.227",
+                pageName: "SayNameIntent",
+                channel: "Tests",
+                prop1: "Alexa-one",
+                prop2: "alexa-two",
+                events: "event1",
+                eVar1: name,
+                eVar2: "",
+                eVar3: "Alastair"
+            };
+                
+            aaHelper.postAnalytics(analyticsData).then((response) => {
+                console.log("[sayName.postAnalytics] AA data saved: " + JSON.stringify(response));
+            },
+            (err) => {  
+                console.log("sayName.postAnalytics: ERROR: "+err);
+            });
+
+            var speechOutput = "Hello " + name + ", how are you today? You have "+remainingdays+" days till your next birthday. How do I know that? "+randomStatement();
+            console.log("[sayName] speechOutput - " + speechOutput);
+            if(this.attributes["debug"] == "yes") {
+                console.log("Debugging Alexa ask - " + speechOutput);
+                this.emitWithState("moreInfo");
+            } else{
+                this.emit(":ask", speechOutput, speechOutput);
             }
             
         })
-
-        var theFriends = getFBFriends();
-        console.log("[sayName] theFriends: "+theFriends);
-        for (friend in theFriends) {
-            console.log("theFriends: "+theFriends[friend].firstname);
-        }
-
-        /*var ref = firebase.app().database().ref();
-        var usersRef = ref.child('friends');
-        usersRef.orderByKey().on('value', function(snap) {
-            console.log("usersRef: "+snap.getKey(), snap.val());
-            //firebase.database().goOffline();
-        });
-
-        var callback = function (snap) {
-            console.log("usersRef: "+snap.getKey(), snap.val());
-        }*/
         
-        
-
-        var accessToken = this.event.session.user.accessToken;
-        console.log("[sayName] Access Token: " + this.event.session.user.accessToken);
-        console.log("[sayName] Access userId: " + this.event.session.user.userId);
-
-        var name = this.event.request.intent.slots.Name.value;
-        console.log("[sayName] speechOutput - " + name);
-
-        var analyticsData = {
-            ipAddress:"31.48.147.227",
-            pageName: "SayNameIntent",
-            channel: "Tests",
-            prop1: "Alexa-one",
-            prop2: "alexa-two",
-            events: "event1",
-            eVar1: name,
-            eVar2: "",
-            eVar3: "Alastair"
-        };
-
-        /*aaHelper.getCRSFToken().then(function(token) {
-            console.log("[aaHelper.getCRSFToken] Analytics data token: ");
-            aaHelper.postAuthorAnalyticsData(token,analyticsData)
-                .then(function(response) {
-                    console.log("[aaHelper.postAuthorAnalyticsData] Analytics data saved: ");
-                })
-                .catch(function(err) {
-                    console.log("[aaHelper.postAuthorAnalyticsData] Coming here in error: "+err.statusCode);
-                });
-
-        }).catch(function(err) {
-            console.log("[aaHelper.getCRSFToken] Coming here in error: "+err);
-        });*/
-
-            
-        aaHelper.postAnalytics(analyticsData).then((response) => {
-            console.log("[sayName.postAnalytics] AA data saved: " + JSON.stringify(response));
-            
-        },
-        (err) => {  
-            console.log("sayName.postAnalytics: ERROR: "+err);
-        });
-
-
-
-
-        var speechOutput = "Hello " + name + ", how are you today?";
-        if(this.attributes["debug"] == "yes") {
-            console.log("Debugging Alexa ask - " + speechOutput);
-            this.emitWithState("moreInfo");
-        } else{
-            this.emit(":tell", speechOutput, speechOutput);
-        }
 
     },
     'moreInfo': function() {
@@ -264,9 +233,50 @@ var startMalkinsHandlers = Alexa.CreateStateHandler(states.START_MODE, {
 //    END of Intent Handlers {} ========================================================================================
 // 3. Helper Function  =================================================================================================
 
+function birthdayCalculation(birthday, format) {
+    console.log("in birthdayCalculation");
+    var birthdaydate,nextbirthdaydate;
+    birthdaydate = new Date(birthday);
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var days = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
+    var formattedDate = birthdaydate.getDate() + " " + (months[birthdaydate.getMonth()]) + " " + birthdaydate.getFullYear();
+
+    var oneDay = 24*60*60*1000;
+    var todateDate = new Date();
+    if (birthdaydate.getMonth() < todateDate.getMonth()) {
+        nextbirthdaydate = new Date((todateDate.getFullYear()+1)+"/"+birthdaydate.getMonth()+"/"+birthdaydate.getDate());
+    } else {
+        nextbirthdaydate = new Date(todateDate.getFullYear()+"/"+birthdaydate.getMonth()+"/"+birthdaydate.getDate());
+    }
+    var diffDays = Math.round(Math.abs((todateDate.getTime() - nextbirthdaydate.getTime())/(oneDay)));
+
+    return diffDays;
+}
+
+function randomStatement() {
+    console.log("in randomStatement");
+    var finalStatement;
+    var statements = [
+        'Spooky',
+        'Magic',
+        'Ask Papa',
+        'Ask Mama',
+        'I know everything',
+        'I know everything',
+        'Not telling you',
+        'Secret',
+        'I have power',
+        'Give papa a sloppy kiss and he may tell'
+    ];
+    var statementNumber = Math.floor((Math.random() * 10) + 1);
+    finalStatement = statements[statementNumber];
+    
+    return finalStatement;
+}
+
 function delegateSlotCollection(){
-  console.log("in delegateSlotCollection");
-  console.log("current dialogState: "+this.event.request.dialogState);
+    console.log("in delegateSlotCollection");
+    console.log("current dialogState: "+this.event.request.dialogState);
     if (this.event.request.dialogState === "STARTED") {
       console.log("in Beginning");
       var updatedIntent=this.event.request.intent;
